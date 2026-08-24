@@ -1,0 +1,361 @@
+/* ==========================================================================
+   DEVELOPER JOURNEY TIMELINE — script.js
+   Vanilla JavaScript only. Organized into small, single-purpose modules
+   that are initialized once the DOM is ready.
+
+   Modules:
+     - Utils            small shared helpers
+     - PageLoader        boot/loading screen
+     - TerminalTyper      hero terminal typing effect
+     - ThemeToggle        dark/light mode switch (persisted)
+     - HeaderScroll       nav background on scroll
+     - ScrollProgress     top progress bar + back-to-top ring
+     - TimelineController scroll-fill line + reveal + active node highlighting
+     - RevealOnScroll     generic IntersectionObserver reveal (goal cards)
+     - BackToTop          scroll-to-top button behaviour
+   ========================================================================== */
+
+(function () {
+  'use strict';
+
+  /* ------------------------------------------------------------------ *
+   * Utils
+   * ------------------------------------------------------------------ */
+  const Utils = {
+    prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+
+    clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    },
+
+    /** Returns how far (0–1) an element has progressed through the viewport. */
+    getScrollFraction(rectTop, rectHeight, viewportHeight) {
+      const total = rectHeight + viewportHeight;
+      const traveled = viewportHeight - rectTop;
+      return Utils.clamp(traveled / total, 0, 1);
+    },
+  };
+
+  /* ------------------------------------------------------------------ *
+   * PageLoader — simple terminal-style boot screen, hides on load
+   * ------------------------------------------------------------------ */
+  const PageLoader = {
+    init() {
+      this.el = document.getElementById('loader');
+      if (!this.el) return;
+
+      const hide = () => {
+        this.el.classList.add('is-hidden');
+        // Remove from tab order / DOM flow once fully hidden
+        setTimeout(() => this.el.setAttribute('aria-hidden', 'true'), 650);
+      };
+
+      // Give the boot animation a minimum visible time so it reads as
+      // intentional rather than a flash, but never block real content.
+      const minDelay = Utils.prefersReducedMotion ? 200 : 900;
+      window.addEventListener('load', () => setTimeout(hide, minDelay));
+
+      // Safety net in case 'load' never fires (e.g. slow embedded fonts)
+      setTimeout(hide, 3500);
+    },
+  };
+
+  /* ------------------------------------------------------------------ *
+   * TerminalTyper — types out a short "about" script in the hero terminal
+   * ------------------------------------------------------------------ */
+  const TerminalTyper = {
+    lines: [
+      { prompt: '$', text: 'whoami', type: 'command' },
+      { prompt: '>', text: 'a curious front-end developer', type: 'output' },
+      { prompt: '$', text: 'cat journey.log', type: 'command' },
+      { prompt: '>', text: 'C++ -> HTML/CSS -> JS -> React -> ???', type: 'output' },
+    ],
+
+    init() {
+      this.el = document.getElementById('typedTerminal');
+      if (!this.el) return;
+
+      if (Utils.prefersReducedMotion) {
+        this.renderInstantly();
+        return;
+      }
+
+      this.lineIndex = 0;
+      this.charIndex = 0;
+      this.typeSpeed = 32;
+      this.linePauseMs = 380;
+
+      this.typeNextChar();
+    },
+
+    renderInstantly() {
+      this.el.innerHTML = this.lines
+        .map(
+          (line) =>
+            `<p class="line"><span class="prompt">${line.prompt}</span><span class="${line.type === 'output' ? 'output' : ''}">${line.text}</span></p>`
+        )
+        .join('');
+    },
+
+    typeNextChar() {
+      if (this.lineIndex >= this.lines.length) return;
+
+      const currentLine = this.lines[this.lineIndex];
+      let lineEl = this.el.children[this.lineIndex];
+
+      if (!lineEl) {
+        lineEl = document.createElement('p');
+        lineEl.className = 'line';
+        lineEl.innerHTML = `<span class="prompt">${currentLine.prompt}</span><span class="${currentLine.type === 'output' ? 'output' : ''} typed-text"></span><span class="type-cursor"></span>`;
+        this.el.appendChild(lineEl);
+      }
+
+      const textSpan = lineEl.querySelector('.typed-text');
+      const cursor = lineEl.querySelector('.type-cursor');
+
+      if (this.charIndex < currentLine.text.length) {
+        textSpan.textContent += currentLine.text.charAt(this.charIndex);
+        this.charIndex += 1;
+        setTimeout(() => this.typeNextChar(), this.typeSpeed);
+      } else {
+        // Line finished: remove its blinking cursor, move to next line
+        if (cursor) cursor.remove();
+        this.lineIndex += 1;
+        this.charIndex = 0;
+        setTimeout(() => this.typeNextChar(), this.linePauseMs);
+      }
+    },
+  };
+
+  /* ------------------------------------------------------------------ *
+   * ThemeToggle — dark (default) / light mode, persisted where possible
+   * ------------------------------------------------------------------ */
+  const ThemeToggle = {
+    STORAGE_KEY: 'dev-journey-theme',
+
+    init() {
+      this.root = document.documentElement;
+      this.btn = document.getElementById('themeToggle');
+      if (!this.btn) return;
+
+      const saved = this.safeGet();
+      const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      const initial = saved || (prefersLight ? 'light' : 'dark');
+      this.apply(initial);
+
+      this.btn.addEventListener('click', () => {
+        const next = this.root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        this.apply(next);
+        this.safeSet(next);
+      });
+    },
+
+    apply(theme) {
+      this.root.setAttribute('data-theme', theme);
+      this.btn.setAttribute('aria-pressed', String(theme === 'light'));
+      this.btn.setAttribute('aria-label', theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
+    },
+
+    safeGet() {
+      try {
+        return window.localStorage.getItem(this.STORAGE_KEY);
+      } catch (err) {
+        return null; // storage unavailable (privacy mode, file://, etc.)
+      }
+    },
+
+    safeSet(value) {
+      try {
+        window.localStorage.setItem(this.STORAGE_KEY, value);
+      } catch (err) {
+        /* no-op: theme just won't persist between visits */
+      }
+    },
+  };
+
+  /* ------------------------------------------------------------------ *
+   * HeaderScroll — adds a solid/glass background to the nav once scrolled
+   * ------------------------------------------------------------------ */
+  const HeaderScroll = {
+    init() {
+      this.header = document.getElementById('siteHeader');
+      if (!this.header) return;
+      this.onScroll = this.onScroll.bind(this);
+      window.addEventListener('scroll', this.onScroll, { passive: true });
+      this.onScroll();
+    },
+    onScroll() {
+      this.header.classList.toggle('is-scrolled', window.scrollY > 24);
+    },
+  };
+
+  /* ------------------------------------------------------------------ *
+   * ScrollProgress — top bar showing overall page scroll percentage,
+   * also drives the back-to-top button's circular progress ring.
+   * ------------------------------------------------------------------ */
+  const ScrollProgress = {
+    init() {
+      this.bar = document.getElementById('scrollProgress');
+      this.ring = document.querySelector('.back-to-top-ring circle');
+      this.ringCircumference = 125.6; // 2 * PI * r(20), matches the SVG circle
+      if (!this.bar) return;
+
+      this.onScroll = this.onScroll.bind(this);
+      window.addEventListener('scroll', this.onScroll, { passive: true });
+      window.addEventListener('resize', this.onScroll);
+      this.onScroll();
+    },
+    onScroll() {
+      const doc = document.documentElement;
+      const scrollTop = doc.scrollTop || document.body.scrollTop;
+      const scrollHeight = (doc.scrollHeight || document.body.scrollHeight) - doc.clientHeight;
+      const fraction = scrollHeight > 0 ? Utils.clamp(scrollTop / scrollHeight, 0, 1) : 0;
+
+      this.bar.style.width = `${fraction * 100}%`;
+
+      if (this.ring) {
+        const offset = this.ringCircumference * (1 - fraction);
+        this.ring.style.strokeDashoffset = String(offset);
+      }
+    },
+  };
+
+  /* ------------------------------------------------------------------ *
+   * TimelineController — vertical progress line fill, card/node reveal,
+   * and "active" milestone highlighting as the user scrolls.
+   * ------------------------------------------------------------------ */
+  const TimelineController = {
+    init() {
+      this.section = document.getElementById('timeline');
+      this.fillEl = document.getElementById('timelineFill');
+      this.items = Array.from(document.querySelectorAll('.timeline-item'));
+      if (!this.section || !this.fillEl || this.items.length === 0) return;
+
+      this.onScroll = this.onScroll.bind(this);
+      window.addEventListener('scroll', this.onScroll, { passive: true });
+      window.addEventListener('resize', this.onScroll);
+      this.onScroll();
+
+      this.setupRevealObserver();
+      this.setupActiveObserver();
+    },
+
+    /** Grows the vertical spine fill in step with how far the section has scrolled. */
+    onScroll() {
+      const rect = this.section.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Fraction of the *section itself* that has passed the viewport's
+      // vertical center, so the line finishes filling roughly as the
+      // last card comes into view rather than at the very bottom edge.
+      const start = viewportHeight * 0.85;
+      const end = rect.height - viewportHeight * 0.4;
+      const traveled = Utils.clamp(start - rect.top, 0, end);
+      const fraction = end > 0 ? traveled / end : 0;
+
+      this.fillEl.style.height = `${fraction * 100}%`;
+    },
+
+    /** Reveals each card (slide + fade) and animates its progress bar once visible. */
+    setupRevealObserver() {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-revealed');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.25, rootMargin: '0px 0px -60px 0px' }
+      );
+
+      this.items.forEach((item) => observer.observe(item));
+    },
+
+    /** Highlights the timeline node whose card is nearest the viewport center. */
+    setupActiveObserver() {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            entry.target.classList.toggle('is-active', entry.isIntersecting);
+          });
+        },
+        { threshold: 0.5, rootMargin: '-40% 0px -40% 0px' }
+      );
+
+      this.items.forEach((item) => observer.observe(item));
+    },
+  };
+
+  /* ------------------------------------------------------------------ *
+   * RevealOnScroll — generic fade/slide-up reveal for the goal cards
+   * ------------------------------------------------------------------ */
+  const RevealOnScroll = {
+    init(selector) {
+      const targets = Array.from(document.querySelectorAll(selector));
+      if (targets.length === 0) return;
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry, i) => {
+            if (entry.isIntersecting) {
+              // Slight stagger for a more polished, orchestrated reveal
+              setTimeout(() => entry.target.classList.add('is-revealed'), i * 90);
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.2, rootMargin: '0px 0px -40px 0px' }
+      );
+
+      targets.forEach((el) => observer.observe(el));
+    },
+  };
+
+  /* ------------------------------------------------------------------ *
+   * BackToTop — show/hide + smooth scroll to top
+   * ------------------------------------------------------------------ */
+  const BackToTop = {
+    init() {
+      this.btn = document.getElementById('backToTop');
+      if (!this.btn) return;
+
+      this.onScroll = this.onScroll.bind(this);
+      window.addEventListener('scroll', this.onScroll, { passive: true });
+      this.btn.addEventListener('click', () => {
+        window.scrollTo({
+          top: 0,
+          behavior: Utils.prefersReducedMotion ? 'auto' : 'smooth',
+        });
+      });
+      this.onScroll();
+    },
+    onScroll() {
+      this.btn.classList.toggle('is-visible', window.scrollY > 480);
+    },
+  };
+
+  /* ------------------------------------------------------------------ *
+   * Misc: footer year
+   * ------------------------------------------------------------------ */
+  function setFooterYear() {
+    const yearEl = document.getElementById('year');
+    if (yearEl) yearEl.textContent = String(new Date().getFullYear());
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Boot
+   * ------------------------------------------------------------------ */
+  document.addEventListener('DOMContentLoaded', () => {
+    PageLoader.init();
+    TerminalTyper.init();
+    ThemeToggle.init();
+    HeaderScroll.init();
+    ScrollProgress.init();
+    TimelineController.init();
+    RevealOnScroll.init('.goal-card');
+    BackToTop.init();
+    setFooterYear();
+  });
+})();
