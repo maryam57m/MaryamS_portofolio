@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developer Journey Timeline &mdash; From First Line to Front-End</title>
+  <meta name="description" content="An interactive vertical timeline showcasing a web developer's journey from a first 'Hello World' in C++ to a professional, internship-ready front-end developer." />
+
+  <!-- Google Fonts: Space Grotesk (display), Inter (body), JetBrains Mono (code/mono accents) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Progressive-enhancement fallback: if JavaScript can't run, make sure
+       the loader never sticks around and every reveal-on-scroll element
+       is still fully visible and usable. -->
+  <noscript>
+    <style>
+      .loader { display: none !important; }
+      .scroll-progress { display: none !important; }
+      .timeline-card,
+      .timeline-node,
+      .goal-card {
+        opacity: 1 !important;
+        transform: none !important;
+      }
+      .progress-fill { width: var(--progress) !important; }
+    </style>
+  </noscript>
+</head>
+<body>
+
+  <!-- ============ PAGE LOADER ============ -->
+  <div class="loader" id="loader" role="status" aria-live="polite">
+    <div class="loader-terminal">
+      <p class="loader-line"><span class="loader-prompt">$</span> booting_portfolio<span class="loader-cursor">&nbsp;</span></p>
+      <div class="loader-bar"><div class="loader-bar-fill"></div></div>
+    </div>
+  </div>
+
+  <!-- ============ SKIP LINK (a11y) ============ -->
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+
+  <!-- ============ SCROLL PROGRESS BAR ============ -->
+  <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+  <!-- ============ HEADER / NAV ============ -->
+  <header class="site-header" id="siteHeader">
+    <nav class="nav" aria-label="Primary">
+      <a href="#hero" class="logo">
+        <span class="logo-bracket">&lt;</span>Dev<span class="logo-accent">Journey</span><span class="logo-bracket">/&gt;</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#timeline">Timeline</a></li>
+        <li><a href="#goals">Future Goals</a></li>
+      </ul>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode" aria-pressed="false">
+        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+        <i class="fa-solid fa-sun" aria-hidden="true"></i>
+      </button>
+    </nav>
+  </header>
+
+  <main id="main-content">
+
+    <!-- ============ HERO SECTION ============ -->
+    <section class="hero" id="hero" aria-label="Introduction">
+
+      <!-- Decorative floating background shapes -->
+      <div class="bg-decoration" aria-hidden="true">
+        <span class="blob blob-blue"></span>
+        <span class="blob blob-purple"></span>
+        <span class="blob blob-small"></span>
+        <span class="floating-symbol fs-1">&lt;/&gt;</span>
+        <span class="floating-symbol fs-2">{ }</span>
+        <span class="floating-symbol fs-3">git</span>
+        <span class="floating-symbol fs-4">01</span>
+        <span class="floating-symbol fs-5">npm</span>
+      </div>
+
+      <div class="hero-inner">
+        <div class="terminal-card glass-card" role="group" aria-label="Terminal introduction">
+          <div class="terminal-titlebar">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <span class="terminal-filename">about.sh</span>
+          </div>
+          <div class="terminal-body" id="typedTerminal" aria-live="polite">
+            <!-- Typed lines injected by JavaScript -->
+          </div>
+        </div>
+
+        <h1 class="hero-title">
+          Developer Journey <span class="text-gradient">Timeline</span>
+        </h1>
+        <p class="hero-subtitle">
+          A commit-by-commit look at how one curious beginner turned late-night tutorials
+          and broken builds into real, working software &mdash; and where that road heads next.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#timeline" class="btn btn-primary">
+            <i class="fa-solid fa-timeline" aria-hidden="true"></i> View the Timeline
+          </a>
+          <a href="#goals" class="btn btn-ghost">
+            <i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> Future Goals
+          </a>
+        </div>
+      </div>
+
+      <a href="#timeline" class="scroll-cue" aria-label="Scroll down to timeline">
+        <span class="scroll-cue-mouse"><span class="scroll-cue-wheel"></span></span>
+        <span class="scroll-cue-text">Scroll</span>
+      </a>
+    </section>
+
+    <!-- ============ TIMELINE SECTION ============ -->
+    <section class="timeline-section" id="timeline" aria-label="Learning timeline">
+      <div class="section-heading">
+        <p class="eyebrow"><i class="fa-solid fa-code-branch" aria-hidden="true"></i> git log --journey</p>
+        <h2>The Learning Path</h2>
+        <p class="section-lede">Eight milestones, committed one skill at a time.</p>
+      </div>
+
+      <div class="timeline-wrap">
+        <!-- Vertical spine + animated fill -->
+        <div class="timeline-track" aria-hidden="true">
+          <div class="timeline-track-fill" id="timelineFill"></div>
+        </div>
+
+        <ol class="timeline-list" id="timelineList">
+
+          <!-- 1 -->
+          <li class="timeline-item" data-year="2015">
+            <div class="timeline-node" aria-hidden="true"><i class="fa-solid fa-code"></i></div>
+            <article class="timeline-card glass-card" tabindex="0">
+              <div class="card-top">
+                <span class="card-year"><i class="fa-solid fa-terminal" aria-hidden="true"></i> 2015</span>
+                <span class="card-icon"><i class="fa-solid fa-code" aria-hidden="true"></i></span>
+              </div>
+              <h3 class="card-title">Started Programming</h3>
+              <p class="card-desc">Wrote my first <code>Hello, World!</code> in C++ and got hooked on the logic of loops, pointers, and the particular joy of squashing a segfault at 1 a.m.</p>
+              <ul class="tag-list">
+                <li class="tag">C++</li>
+                <li class="tag">Algorithms</li>
+                <li class="tag">OOP Basics</li>
+              </ul>
+              <div class="progress-wrap">
+                <div class="progress-track">
+                  <div class="progress-fill" style="--progress: 100%;"></div>
+                </div>
+                <span class="progress-label" aria-label="Milestone completion">100%</span>
+              </div>
+            </article>
+          </li>
+
+          <!-- 2 -->
+          <li class="timeline-item" data-year="2016">
+            <div class="timeline-node" aria-hidden="true"><i class="fa-brands fa-html5"></i></div>
+            <article class="timeline-card glass-card" tabindex="0">
+              <div class="card-top">
+                <span class="card-year"><i class="fa-solid fa-terminal" aria-hidden="true"></i> 2016</span>
+                <span class="card-icon"><i class="fa-brands fa-html5" aria-hidden="true"></i></span>
+              </div>
+              <h3 class="card-title">HTML &amp; CSS</h3>
+              <p class="card-desc">Traded the console for the browser. Learned semantic markup, the box model, and how to fight (then befriend) Flexbox to build my first real web pages.</p>
+              <ul class="tag-list">
+                <li class="tag">HTML5</li>
+                <li class="tag">CSS3</li>
+                <li class="tag">Flexbox</li>
+              </ul>
+              <div class="progress-wrap">
+                <div class="progress-track">
+                  <div class="progress-fill" style="--progress: 100%;"></div>
+                </div>
+                <span class="progress-label">100%</span>
+              </div>
+            </article>
+          </li>
+
+          <!-- 3 -->
+          <li class="timeline-item" data-year="2017">
+            <div class="timeline-node" aria-hidden="true"><i class="fa-brands fa-js"></i></div>
+            <article class="timeline-card glass-card" tabindex="0">
+              <div class="card-top">
+                <span class="card-year"><i class="fa-solid fa-terminal" aria-hidden="true"></i> 2017</span>
+                <span class="card-icon"><i class="fa-brands fa-js" aria-hidden="true"></i></span>
+              </div>
+              <h3 class="card-title">JavaScript</h3>
+              <p class="card-desc">Made pages actually <em>do</em> things. Dove into the DOM, events, closures, and asynchronous code &mdash; and finally understood what "callback hell" meant, first-hand.</p>
+              <ul class="tag-list">
+                <li class="tag">ES6+</li>
+                <li class="tag">DOM APIs</li>
+                <li class="tag">Async/Await</li>
+              </ul>
+              <div class="progress-wrap">
+                <div class="progress-track">
+                  <div class="progress-fill" style="--progress: 100%;"></div>
+                </div>
+                <span class="progress-label">100%</span>
+              </div>
+            </article>
+          </li>
+
+          <!-- 4 -->
+          <li class="timeline-item" data-year="2018">
+            <div class="timeline-node" aria-hidden="true"><i class="fa-solid fa-mobile-screen-button"></i></div>
+            <article class="timeline-card glass-card" tabindex="0">
+              <div class="card-top">
+                <span class="card-year"><i class="fa-solid fa-terminal" aria-hidden="true"></i> 2018</span>
+                <span class="card-icon"><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i></span>
+              </div>
+              <h3 class="card-title">Responsive Web Design</h3>
+              <p class="card-desc">Learned to design mobile-first, then scale up. Media queries, fluid grids, and CSS Grid turned "it works on my screen" into "it works on every screen."</p>
+              <ul class="tag-list">
+                <li class="tag">Media Queries</li>
+                <li class="tag">Mobile-First</li>
+                <li class="tag">CSS Grid</li>
+              </ul>
+              <div class="progress-wrap">
+                <div class="progress-track">
+                  <div class="progress-fill" style="--progress: 100%;"></div>
+                </div>
+                <span class="progress-label">100%</span>
+              </div>
+            </article>
+          </li>
+
+          <!-- 5 -->
+          <li class="timeline-item" data-year="2019">
+            <div class="timeline-node" aria-hidden="true"><i class="fa-solid fa-code-branch"></i></div>
+            <article class="timeline-card glass-card" tabindex="0">
+              <div class="card-top">
+                <span class="card-year"><i class="fa-solid fa-terminal" aria-hidden="true"></i> 2019</span>
+                <span class="card-icon"><i class="fa-solid fa-code-branch" aria-hidden="true"></i></span>
+              </div>
+              <h3 class="card-title">Git &amp; GitHub</h3>
+              <p class="card-desc">Stopped naming folders <code>final_v2_REAL.zip</code> forever. Picked up branching, pull requests, and code review &mdash; and started actually collaborating on code.</p>
+              <ul class="tag-list">
+                <li class="tag">Git</li>
+                <li class="tag">GitHub</li>
+                <li class="tag">Pull Requests</li>
+              </ul>
+              <div class="progress-wrap">
+                <div class="progress-track">
+                  <div class="progress-fill" style="--progress: 100%;"></div>
+                </div>
+                <span class="progress-label">100%</span>
+              </div>
+            </article>
+          </li>
+
+          <!-- 6 -->
+          <li class="timeline-item" data-year="2021">
+            <div class="timeline-node" aria-hidden="true"><i class="fa-brands fa-react"></i></div>
+            <article class="timeline-card glass-card" tabindex="0">
+              <div class="card-top">
+                <span class="card-year"><i class="fa-solid fa-terminal" aria-hidden="true"></i> 2021</span>
+                <span class="card-icon"><i class="fa-brands fa-react" aria-hidden="true"></i></span>
+              </div>
+              <h3 class="card-title">React</h3>
+              <p class="card-desc">Started thinking in components instead of pages. Hooks, state, and props reshaped how I structure interfaces &mdash; and how I reason about UI as data.</p>
+              <ul class="tag-list">
+                <li class="tag">React</li>
+                <li class="tag">Hooks</li>
+                <li class="tag">State Mgmt</li>
+              </ul>
+              <div class="progress-wrap">
+                <div class="progress-track">
+                  <div class="progress-fill" style="--progress: 90%;"></div>
+                </div>
+                <span class="progress-label">90%</span>
+              </div>
+            </article>
+          </li>
+
+          <!-- 7 -->
+          <li class="timeline-item" data-year="2022">
+            <div class="timeline-node" aria-hidden="true"><i class="fa-solid fa-diagram-project"></i></div>
+            <article class="timeline-card glass-card" tabindex="0">
+              <div class="card-top">
+                <span class="card-year"><i class="fa-solid fa-terminal" aria-hidden="true"></i> 2022</span>
+                <span class="card-icon"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i></span>
+              </div>
+              <h3 class="card-title">Portfolio Projects</h3>
+              <p class="card-desc">Shifted from tutorials to shipping. Built, deployed, and documented real projects &mdash; and learned that finishing is a skill of its own.</p>
+              <ul class="tag-list">
+                <li class="tag">Deployment</li>
+                <li class="tag">UI/UX</li>
+                <li class="tag">APIs</li>
+              </ul>
+              <div class="progress-wrap">
+                <div class="progress-track">
+                  <div class="progress-fill" style="--progress: 85%;"></div>
+                </div>
+                <span class="progress-label">85%</span>
+              </div>
+            </article>
+          </li>
+
+          <!-- 8 - current / active milestone -->
+          <li class="timeline-item is-current" data-year="2024">
+            <div class="timeline-node" aria-hidden="true"><i class="fa-solid fa-briefcase"></i></div>
+            <article class="timeline-card glass-card" tabindex="0">
+              <div class="card-top">
+                <span class="card-year"><i class="fa-solid fa-terminal" aria-hidden="true"></i> 2024 &mdash; now</span>
+                <span class="card-icon"><i class="fa-solid fa-briefcase" aria-hidden="true"></i></span>
+              </div>
+              <span class="current-badge"><i class="fa-solid fa-circle-notch fa-spin" aria-hidden="true"></i> In Progress</span>
+              <h3 class="card-title">Looking for Internship</h3>
+              <p class="card-desc">Polishing my portfolio, sharpening interview skills, and actively looking for a front-end internship to turn everything I've learned into real-world impact.</p>
+              <ul class="tag-list">
+                <li class="tag">Open to Work</li>
+                <li class="tag">Interview Prep</li>
+                <li class="tag">Growth Mindset</li>
+              </ul>
+              <div class="progress-wrap">
+                <div class="progress-track">
+                  <div class="progress-fill" style="--progress: 60%;"></div>
+                </div>
+                <span class="progress-label">60%</span>
+              </div>
+            </article>
+          </li>
+
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ FUTURE GOALS SECTION ============ -->
+    <section class="goals-section" id="goals" aria-label="Future goals">
+      <div class="section-heading">
+        <p class="eyebrow"><i class="fa-solid fa-flag-checkered" aria-hidden="true"></i> roadmap.json</p>
+        <h2>What's Next</h2>
+        <p class="section-lede">The journey doesn't stop at "hire me" &mdash; here's what's queued up next.</p>
+      </div>
+
+      <div class="goals-grid">
+        <article class="goal-card glass-card">
+          <div class="goal-icon"><i class="fa-solid fa-user-tie" aria-hidden="true"></i></div>
+          <h3>Land a Front-End Internship</h3>
+          <p>Join a team where I can learn from experienced engineers and contribute to real, production-facing products.</p>
+        </article>
+
+        <article class="goal-card glass-card">
+          <div class="goal-icon"><i class="fa-brands fa-github" aria-hidden="true"></i></div>
+          <h3>Contribute to Open Source</h3>
+          <p>Send meaningful pull requests to projects I actually use, and get comfortable reading other people's codebases.</p>
+        </article>
+
+        <article class="goal-card glass-card">
+          <div class="goal-icon"><i class="fa-solid fa-layer-group" aria-hidden="true"></i></div>
+          <h3>Master TypeScript &amp; Next.js</h3>
+          <p>Level up code reliability and performance with static typing, server components, and modern rendering patterns.</p>
+        </article>
+
+        <article class="goal-card glass-card">
+          <div class="goal-icon"><i class="fa-solid fa-rocket" aria-hidden="true"></i></div>
+          <h3>Ship a Full Product</h3>
+          <p>Design, build, and launch a complete SaaS side-project &mdash; from database schema to a paying (or at least real) user.</p>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-logo">
+        <span class="logo-bracket">&lt;</span>Dev<span class="logo-accent">Journey</span><span class="logo-bracket">/&gt;</span>
+      </p>
+      <p class="footer-text">Built with HTML, CSS &amp; vanilla JavaScript &mdash; no frameworks, just curiosity.</p>
+      <ul class="footer-socials" aria-label="Social links">
+        <li><a href="#" aria-label="GitHub profile"><i class="fa-brands fa-github" aria-hidden="true"></i></a></li>
+        <li><a href="#" aria-label="LinkedIn profile"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i></a></li>
+        <li><a href="#" aria-label="Twitter / X profile"><i class="fa-brands fa-x-twitter" aria-hidden="true"></i></a></li>
+        <li><a href="#" aria-label="Email contact"><i class="fa-solid fa-envelope" aria-hidden="true"></i></a></li>
+      </ul>
+      <p class="footer-copy">&copy; <span id="year"></span> Developer Journey Timeline. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ============ BACK TO TOP BUTTON ============ -->
+  <button class="back-to-top" id="backToTop" type="button" aria-label="Back to top">
+    <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
+    <svg class="back-to-top-ring" viewBox="0 0 44 44" aria-hidden="true">
+      <circle cx="22" cy="22" r="20"></circle>
+    </svg>
+  </button>
+
+  <script src="script.js"></script>
+</body>
+</html>
