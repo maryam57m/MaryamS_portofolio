@@ -13,7 +13,7 @@
      - TimelineController scroll-fill line + reveal + active node highlighting
      - RevealOnScroll     generic IntersectionObserver reveal (goal cards)
      - BackToTop          scroll-to-top button behaviour
-   ========================================================================== */
+   ======================================================================== */
 
 (function () {
   'use strict';
